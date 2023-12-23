@@ -3,7 +3,7 @@ using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Core.Interfaces;
-using Core.Specifications;
+using System.Runtime.CompilerServices;
 
 namespace API.Controllers
 {
@@ -25,22 +25,14 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts()
         {
-            var spec = new Specification<Product>(p => p.Price > 100)
-                .AddInclude(p => p.ProductType)
-                .AddInclude(p=>p.ProductBrand);
-
-            var products = await _productsRepository.ListAsync(spec);
+            var products = await _productsRepository.ListAsync(x=>true, x=>x.ProductBrand, x=>x.ProductType);
             return Ok(products);
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var spec = new Specification<Product>(p => p.Id.Equals(id))
-                            .AddInclude(p => p.ProductType)
-                            .AddInclude(p=>p.ProductBrand);
-
-            var product = await _productsRepository.GetEntityWithSpec(spec);
+            var product = await _productsRepository.GetByIdAsync(id, x=>x.ProductBrand, x=>x.ProductType);
             return Ok(product);
         }
 

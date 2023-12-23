@@ -1,7 +1,8 @@
+using System.Linq.Expressions;
 using Core.Entities;
 using Core.Interfaces;
-using Core.Specifications;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Infrastructure.Data.Repository
 {
@@ -14,28 +15,50 @@ namespace Infrastructure.Data.Repository
             
         }
 
-        public async Task<T> GetByIdAsync(int id)
-        {
-            return await _storeContext.Set<T>().FindAsync(id);
-        }
-
         public async Task<IReadOnlyList<T>> ListAllAsync()
         {
             return await _storeContext.Set<T>().ToListAsync();
         }
 
-        public async Task<T> GetEntityWithSpec(ISpecification<T> spec)
+        public async Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria)
         {
-            return await ApplySpecification(spec).FirstOrDefaultAsync();
+            return await _storeContext.Set<T>().Where(criteria).ToListAsync();
         }
 
-        public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+        public async Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria, params Expression<Func<T, object>>[] includes)
         {
-            return await ApplySpecification(spec).ToListAsync();
+            var query = _storeContext.Set<T>().Where(criteria);
+            query = ApplyIncludes(query, includes);
+            return await query.ToListAsync();
         }
 
-        private IQueryable<T> ApplySpecification(ISpecification<T> spec){
-            return SpecificationEvaluator<T>.GetQuery(_storeContext.Set<T>().AsQueryable(), spec);
+        public async Task<T> GetByIdAsync(object id)
+        {
+            return await _storeContext.Set<T>().FindAsync(id);
+        }
+
+        public async Task<T> GetByIdAsync(object id, params Expression<Func<T, object>>[] includes)
+        {
+            var entity = await _storeContext.Set<T>().FindAsync(id);
+            if (entity != null)
+            {
+                var entry = _storeContext.Entry(entity);
+                ApplyIncludes(entry, includes);
+            }
+            return entity;
+        }
+
+        private IQueryable<T> ApplyIncludes(IQueryable<T> query, params Expression<Func<T, object>>[] includes)
+        {
+            return includes.Aggregate(query, (current, include) => current.Include(include));
+        }
+
+        private void ApplyIncludes(EntityEntry<T> entry, params Expression<Func<T, object>>[] includes)
+        {
+            foreach (var include in includes)
+            {
+                entry.Reference(include).Load();
+            }
         }
     }
 }

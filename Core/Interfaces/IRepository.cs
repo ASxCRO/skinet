@@ -1,13 +1,14 @@
+using System.Linq.Expressions;
 using Core.Entities;
-using Core.Specifications;
 
 namespace Core.Interfaces
 {
     public interface IRepository<T> where T : BaseEntity
     {
-        Task<T> GetByIdAsync(int id);
         Task<IReadOnlyList<T>> ListAllAsync();
-        Task<T> GetEntityWithSpec(ISpecification<T> spec);
-        Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
+        Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria);
+        Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria, params Expression<Func<T, object>>[] includes);
+        Task<T> GetByIdAsync(object id);
+        Task<T> GetByIdAsync(object id, params Expression<Func<T, object>>[] includes);
     }
 }
