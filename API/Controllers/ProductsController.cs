@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Core.Interfaces;
 using System.Runtime.CompilerServices;
+using AutoMapper;
+using API.DTO;
 
 namespace API.Controllers
 {
@@ -14,26 +16,31 @@ namespace API.Controllers
         private readonly IRepository<Product> _productsRepository;
         private readonly IRepository<ProductBrand> _productBrandRepository;
         private readonly IRepository<ProductType> _productTypesRepository;
+        private readonly IMapper _mapper;
 
-        public ProductsController(IRepository<Product> productsRepository,IRepository<ProductBrand> productBrandRepository,IRepository<ProductType> productTypesRepository)
+        public ProductsController(IRepository<Product> productsRepository,
+        IRepository<ProductBrand> productBrandRepository,
+        IRepository<ProductType> productTypesRepository,
+        IMapper mapper)
         {
             _productsRepository = productsRepository;
             _productBrandRepository = productBrandRepository;
             _productTypesRepository = productTypesRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts()
+        public async Task<ActionResult<IReadOnlyList<ProductToReturnDTO>>> GetProducts()
         {
             var products = await _productsRepository.ListAsync(x=>true, x=>x.ProductBrand, x=>x.ProductType);
-            return Ok(products);
+            return Ok(_mapper.Map<IReadOnlyList<Product>,IReadOnlyList<ProductToReturnDTO>>(products));
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductToReturnDTO>> GetProduct(int id)
         {
             var product = await _productsRepository.GetByIdAsync(id, x=>x.ProductBrand, x=>x.ProductType);
-            return Ok(product);
+            return Ok(_mapper.Map<Product,ProductToReturnDTO>(product));
         }
 
         [HttpGet("brands")]
