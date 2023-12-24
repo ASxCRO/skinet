@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using Core.Entities;
 
@@ -7,9 +8,11 @@ namespace Infrastructure.Data
     {
         public static async Task SeedAsync(StoreContext context)
         {
+            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
             if(!context.ProductBrands.Any())
             {
-                var brandsData = File.ReadAllText("../Infrastructure/Data/SeedData/brands.json");
+                var brandsData = File.ReadAllText(path + @"/Data/SeedData/brands.json");
                 var brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsData);
 
                 context.ProductBrands.AddRange(brands);
@@ -17,7 +20,7 @@ namespace Infrastructure.Data
 
             if(!context.ProductTypes.Any())
             {
-                var typesData = File.ReadAllText("../Infrastructure/Data/SeedData/types.json");
+                var typesData = File.ReadAllText(path + @"/Data/SeedData/types.json");
                 var types = JsonSerializer.Deserialize<List<ProductType>>(typesData);
 
                 context.ProductTypes.AddRange(types);
@@ -25,7 +28,7 @@ namespace Infrastructure.Data
 
             if(!context.Products.Any())
             {
-                var productData = File.ReadAllText("../Infrastructure/Data/SeedData/products.json");
+                var productData = File.ReadAllText(path + @"/Data/SeedData/products.json");
                 var products = JsonSerializer.Deserialize<List<Product>>(productData);
 
                 context.Products.AddRange(products);
