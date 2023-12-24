@@ -14,6 +14,16 @@ namespace Infrastructure.Data.Repository
         {
             this._storeContext = storeContext;
         }
+        
+        public async Task<int> CountAsync(Expression<Func<T, bool>> criteria)
+        {
+            return await _storeContext.Set<T>().Where(criteria).CountAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> QueryAsync(Expression<Func<T, bool>> criteria)
+        {
+             return await _storeContext.Set<T>().Where(criteria).ToListAsync();
+        }
 
         public async Task<IReadOnlyList<T>> ListAllAsync()
         {

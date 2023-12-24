@@ -15,14 +15,11 @@ export class AppComponent implements OnInit {
 	constructor(private http: HttpClient) {}
 
 	ngOnInit(): void {
-		this.http.get<Pagination<Product[]>>('https://localhost:5001/api/products').subscribe({
+		this.http.get<Pagination<Product[]>>('https://localhost:5001/api/ProductGrid').subscribe({
 			next: (response) => (this.products = response.data),
 			complete: () => {
 				console.log('request completed');
 			},
 		});
 	}
-}
-function Pagination<T>(arg0: string) {
-	throw new Error('Function not implemented.');
 }

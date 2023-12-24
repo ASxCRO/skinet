@@ -1,5 +1,8 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using API.DTO;
+using API.Helpers;
+using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -7,17 +10,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Base.Controllers
 {
     [ApiController]
-    public abstract class BasePaginableController<T> : ControllerBase where T : BaseEntity
+    public abstract class BasePaginableController<T,V> : ControllerBase where T : BaseEntity where V: class
     {
         private readonly IRepository<T> _repository;
+        private readonly IMapper _mapper;
 
-        protected BasePaginableController(IRepository<T> repository)
+        protected BasePaginableController(IRepository<T> repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
         // GET api/[controller]
-        public async Task<ActionResult<T>> Get(int page = 1, int pageSize = 10, string orderBy = "Id", string sortOrder = "asc",  string filterProperty = null, string filterValue = null)
+        public async Task<ActionResult<V>> Get(int page = 1, int pageSize = 10, string orderBy = "Id", string sortOrder = "asc",  string filterProperty = null, string filterValue = null)
         {
             try
             {
@@ -33,7 +38,10 @@ namespace API.Base.Controllers
                     includes: GetIncludes()
                 );
 
-                return Ok(items);
+                var data = _mapper.Map<IReadOnlyList<V>>(items);
+                var totalItems = await _repository.CountAsync(filterExpression);
+
+                return Ok(new Pagination<V>(page,pageSize, totalItems, data));
             }
             catch (Exception ex)
             {
@@ -65,6 +73,11 @@ namespace API.Base.Controllers
 
         private Expression<Func<T, bool>> GetFilterExpression(string filterProperty, string filterValue)
         {
+            if (filterProperty == null || filterValue == null)
+            {
+                return t => true; // No filtering if the provided property does not exist
+            }
+
             PropertyInfo property = typeof(T).GetProperty(filterProperty, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
             if (property == null)

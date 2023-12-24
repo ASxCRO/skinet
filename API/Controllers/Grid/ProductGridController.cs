@@ -10,9 +10,9 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductGridController : BasePaginableController<Product>
+    public class ProductGridController : BasePaginableController<Product, ProductToReturnDTO>
     {
-        public ProductGridController(IRepository<Product> productsRepository, IMapper mapper) : base(productsRepository)
+        public ProductGridController(IRepository<Product> productsRepository, IMapper mapper) : base(productsRepository,mapper)
         {
         }
         

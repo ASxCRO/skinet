@@ -5,7 +5,9 @@ namespace Core.Interfaces
 {
     public interface IRepository<T> where T : BaseEntity
     {
-       Task<IReadOnlyList<T>> ListAllAsync();
+        Task<IReadOnlyList<T>> QueryAsync(Expression<Func<T, bool>> criteria);
+        Task<int> CountAsync(Expression<Func<T, bool>> criteria);
+        Task<IReadOnlyList<T>> ListAllAsync();
         Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria);
         Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria, params Expression<Func<T, object>>[] includes);
         Task<IReadOnlyList<T>> ListPaginatedAsync(int page, int pageSize);
