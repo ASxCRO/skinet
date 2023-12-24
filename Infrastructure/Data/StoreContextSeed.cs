@@ -8,7 +8,7 @@ namespace Infrastructure.Data
     {
         public static async Task SeedAsync(StoreContext context)
         {
-            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             if(!context.ProductBrands.Any())
             {
