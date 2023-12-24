@@ -22,6 +22,7 @@ namespace API.Base.Controllers
         }
 
         // GET api/[controller]
+        [Cached(600)]
         public async Task<ActionResult<V>> Get(int page = 1, int pageSize = 10, string orderBy = "Id", string sortOrder = "asc",  string filterProperty = null, string filterValue = null)
         {
             try

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using AutoMapper;
 using API.DTO;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -26,6 +27,7 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
+        [Cached(600)]
          [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductToReturnDTO>> GetProduct(int id)
         {
@@ -33,6 +35,7 @@ namespace API.Controllers
             return Ok(_mapper.Map<Product,ProductToReturnDTO>(product));
         }
 
+        [Cached(600)]
         [HttpGet("brands")]
         public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
         {
@@ -40,6 +43,7 @@ namespace API.Controllers
             return Ok(brands);
         }
 
+        [Cached(600)]
         [HttpGet("types")]
         public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
         {
