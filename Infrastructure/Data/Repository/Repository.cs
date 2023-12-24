@@ -9,10 +9,10 @@ namespace Infrastructure.Data.Repository
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         private readonly StoreContext _storeContext;
+
         public Repository(StoreContext storeContext)
         {
             this._storeContext = storeContext;
-            
         }
 
         public async Task<IReadOnlyList<T>> ListAllAsync()
@@ -28,6 +28,36 @@ namespace Infrastructure.Data.Repository
         public async Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>> criteria, params Expression<Func<T, object>>[] includes)
         {
             var query = _storeContext.Set<T>().Where(criteria);
+            query = ApplyIncludes(query, includes);
+            return await query.ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> ListPaginatedAsync(int page, int pageSize)
+        {
+            var query = _storeContext.Set<T>().Skip((page - 1) * pageSize).Take(pageSize);
+            return await query.ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> ListPaginatedAsync(Expression<Func<T, bool>> criteria, int page, int pageSize)
+        {
+            var query = _storeContext.Set<T>().Where(criteria).Skip((page - 1) * pageSize).Take(pageSize);
+            return await query.ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> ListPaginatedAsync(Expression<Func<T, bool>> criteria, Expression<Func<T, object>> orderBy, string sortOrder, int page, int pageSize, params Expression<Func<T, object>>[] includes)
+        {
+            var query = _storeContext.Set<T>().Where(criteria);
+            
+            if(sortOrder == "asc")
+            {
+                query = query.OrderBy(orderBy);
+            }
+            else{
+                query = query.OrderByDescending(orderBy);
+            }
+            
+            
+            query = query.Skip((page - 1) * pageSize).Take(pageSize);
             query = ApplyIncludes(query, includes);
             return await query.ToListAsync();
         }

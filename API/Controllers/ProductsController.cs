@@ -1,9 +1,6 @@
-using Infrastructure.Data;
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Core.Interfaces;
-using System.Runtime.CompilerServices;
 using AutoMapper;
 using API.DTO;
 
@@ -29,14 +26,7 @@ namespace API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<ProductToReturnDTO>>> GetProducts()
-        {
-            var products = await _productsRepository.ListAsync(x=>true, x=>x.ProductBrand, x=>x.ProductType);
-            return Ok(_mapper.Map<IReadOnlyList<Product>,IReadOnlyList<ProductToReturnDTO>>(products));
-        }
-
-        [HttpGet("{id:int}")]
+         [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductToReturnDTO>> GetProduct(int id)
         {
             var product = await _productsRepository.GetByIdAsync(id, x=>x.ProductBrand, x=>x.ProductType);
