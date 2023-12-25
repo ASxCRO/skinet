@@ -4,6 +4,7 @@ using Infrastructure.Data.Repository;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Serilog;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,11 +30,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("https://localhost:5001")
+        builder => builder.AllowAnyOrigin()
                           .AllowAnyHeader()
                           .AllowAnyMethod());
 });
 
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
@@ -53,6 +56,8 @@ app.UseStaticFiles(new StaticFileOptions{
     ),
     RequestPath ="/Content"
 });
+
+app.UseSerilogRequestLogging();
 
 app.UseAuthorization();
 

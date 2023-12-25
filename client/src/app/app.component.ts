@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Product } from './models/product';
 import { Pagination } from './models/pagination';
+import { environment } from 'src/environments/environment.development';
 
 @Component({
 	selector: 'app-root',
@@ -15,7 +16,7 @@ export class AppComponent implements OnInit {
 	constructor(private http: HttpClient) {}
 
 	ngOnInit(): void {
-		this.http.get<Pagination<Product[]>>('https://localhost:5001/api/ProductGrid').subscribe({
+		this.http.get<Pagination<Product[]>>(environment.apiUrl + '/api/ProductGrid').subscribe({
 			next: (response) => (this.products = response.data),
 			complete: () => {
 				console.log('request completed');
