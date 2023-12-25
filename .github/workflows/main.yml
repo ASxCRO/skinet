@@ -35,6 +35,7 @@ jobs:
         username: ${{ secrets.REMOTE_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.REMOTE_SSH_PORT }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
 
     - name: Update Docker Compose
       run: |
