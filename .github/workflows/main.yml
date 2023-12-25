@@ -1,0 +1,44 @@
+name: Docker Build and Update
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build Docker image
+      run: docker build -t your-image-name:latest .
+
+    - name: Push Docker image
+      run: docker push your-image-name:latest
+
+  update-compose:
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+    - name: Setup SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        port: ${{ secrets.REMOTE_SSH_PORT }}
+
+    - name: Update Docker Compose
+      run: |
+        ssh ${{ secrets.REMOTE_USERNAME }}@${{ secrets.REMOTE_HOST }} -p ${{ secrets.REMOTE_SSH_PORT }} "docker-compose down && docker-compose pull && docker-compose up -d"
