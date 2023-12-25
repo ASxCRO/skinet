@@ -15,8 +15,7 @@ WORKDIR /app/client
 RUN npm install
 RUN npm run build
 
-FROM build
-
+WORKDIR /app
 # Build the application
 RUN dotnet publish -c Release -o publish skinet.sln
 
