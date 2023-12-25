@@ -7,6 +7,16 @@ WORKDIR /app
 # Copy the project files to the container
 COPY . ./
 
+# Stage 1: Build the Angular app
+FROM node:18.7.1 as ng-builder
+WORKDIR /app/client
+
+# Install dependencies and build the Angular app
+RUN npm install
+RUN npm run build
+
+FROM build
+
 # Build the application
 RUN dotnet publish -c Release -o publish skinet.sln
 
