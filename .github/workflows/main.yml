@@ -37,4 +37,4 @@ jobs:
   
       - name: Update Docker Compose
         run: |
-          ssh ${{ secrets.REMOTE_USERNAME }}@${{ secrets.REMOTE_HOST }} "docker-compose down && docker-compose pull && docker-compose up -d"
+          ssh ${{ secrets.REMOTE_USERNAME }}@${{ secrets.REMOTE_HOST }} -o StrictHostKeyChecking=no "docker-compose down && docker-compose pull && docker-compose up -d"
