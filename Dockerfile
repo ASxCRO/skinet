@@ -1,5 +1,15 @@
 
 
+
+
+# Stage 1: Build the Angular app
+FROM node:18.17.1 as ng-builder
+WORKDIR /app/client
+
+# Install dependencies and build the Angular app
+RUN npm install
+RUN npm run build
+
 # Stage 2: Build the .NET application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
@@ -11,16 +21,6 @@ COPY . ./
 
 # Build the .NET application
 RUN dotnet publish -c Release -o publish skinet.sln
-
-# Stage 1: Build the Angular app
-FROM node:18.17.1 as ng-builder
-WORKDIR /app/client
-
-# Install dependencies and build the Angular app
-RUN npm install
-RUN npm run build
-
-COPY --from=ng-builder /app/API/wwwroot /app/publish/wwwroot
 
 # Stage 3: Create the final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
