@@ -9,6 +9,9 @@ WORKDIR /app
 # Copy the project files to the container
 COPY . ./
 
+# Build the .NET application
+RUN dotnet publish -c Release -o publish skinet.sln
+
 # Stage 1: Build the Angular app
 FROM node:18.17.1 as ng-builder
 WORKDIR /app/client
@@ -17,10 +20,7 @@ WORKDIR /app/client
 RUN npm install
 RUN npm run build
 
-WORKDIR /app
-
-# Build the .NET application
-RUN dotnet publish -c Release -o publish skinet.sln
+COPY --from=ng-builder /app/API/wwwroot /app/publish/wwwroot
 
 # Stage 3: Create the final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
