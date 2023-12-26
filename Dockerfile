@@ -1,4 +1,6 @@
-# Use the official .NET 8 SDK image as the base image
+
+
+# Stage 2: Build the .NET application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory in the container
@@ -8,7 +10,7 @@ WORKDIR /app
 COPY . ./
 
 # Stage 1: Build the Angular app
-FROM node:18.7.1 as ng-builder
+FROM node:18.17.1 as ng-builder
 WORKDIR /app/client
 
 # Install dependencies and build the Angular app
@@ -16,10 +18,11 @@ RUN npm install
 RUN npm run build
 
 WORKDIR /app
-# Build the application
+
+# Build the .NET application
 RUN dotnet publish -c Release -o publish skinet.sln
 
-# Use the official .NET 8 Runtime image as the base image for the final stage
+# Stage 3: Create the final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
 # Set the working directory in the container
