@@ -1,15 +1,3 @@
-
-
-
-
-# Stage 1: Build the Angular app
-FROM node:18.17.1 as ng-builder
-WORKDIR /app/client
-
-# Install dependencies and build the Angular app
-RUN npm install
-RUN npm run build
-
 # Stage 2: Build the .NET application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
@@ -18,6 +6,12 @@ WORKDIR /app
 
 # Copy the project files to the container
 COPY . ./
+
+WORKDIR /app/client
+
+CMD ["npm", "run", "build"]
+
+WORKDIR /app
 
 # Build the .NET application
 RUN dotnet publish -c Release -o publish skinet.sln
