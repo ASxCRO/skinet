@@ -7,9 +7,18 @@ WORKDIR /app
 # Copy the project files to the container
 COPY . ./
 
+# Stage 2: Build the .NET application and the frontend
+FROM node:18.17.1 AS frontend-build
+
+# Set the working directory for the frontend
 WORKDIR /app/client
 
-CMD ["npm", "run", "build"]
+# Copy the project files to the container
+COPY ./client /app/client
+
+# Install dependencies and build the frontend
+RUN npm install
+RUN npm run build
 
 WORKDIR /app
 
