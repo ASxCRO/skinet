@@ -1,33 +1,33 @@
-# Stage 1: Build Angular app
+# Stage 1: Build Angular App
 FROM node:18.17.1 as angular-builder
-
 WORKDIR /app
-
-COPY client/package*.json ./
+COPY client/package.json client/package-lock.json ./
 RUN npm install
-
-COPY client/ .
+COPY client .
 RUN npm run build --prod
 
 # Stage 2: Build .NET API
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnet-builder
-
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-COPY API/API.csproj .
-RUN dotnet restore
+# Copy necessary files for .NET build
+COPY . ./
 
-COPY API/ .
-COPY --from=angular-builder /app/dist/wwwroot ./wwwroot
+# Publish the .NET API
+RUN dotnet publish -c Release -o out skinet.sln
 
-RUN dotnet publish -c Release -o out
-
-# Stage 3: Final runtime image
+# Stage 3: Create the final image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
-
 WORKDIR /app
 
-COPY --from=dotnet-builder /app/out .
+# Copy the published .NET API
+COPY --from=build /app/out .
 
+# Copy the Angular production files to the wwwroot folder
+COPY --from=angular-builder /app/dist ./wwwroot
+
+# Expose port
 EXPOSE 8080
+
+# Start the application
 ENTRYPOINT ["dotnet", "API.dll"]
