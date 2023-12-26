@@ -1,41 +1,33 @@
-# Stage 2: Build the .NET application
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Stage 1: Build Angular app
+FROM node:18.17.1 as angular-builder
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the project files to the container
-COPY . ./
-
-# Stage 2: Build the .NET application and the frontend
-FROM node:18.17.1 AS frontend-build
-
-# Set the working directory for the frontend
-WORKDIR /app/client
-
-# Copy the project files to the container
-COPY ./client /app/client
-
-# Install dependencies and build the frontend
+COPY client/package*.json ./
 RUN npm install
-RUN npm run build
+
+COPY client/ .
+RUN npm run build --prod
+
+# Stage 2: Build .NET API
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnet-builder
 
 WORKDIR /app
 
-# Build the .NET application
-RUN dotnet publish -c Release -o publish skinet.sln
+COPY API/API.csproj .
+RUN dotnet restore
 
-# Stage 3: Create the final runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+COPY API/ .
+COPY --from=angular-builder /app/dist/wwwroot ./wwwroot
 
-# Set the working directory in the container
+RUN dotnet publish -c Release -o out
+
+# Stage 3: Final runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+
 WORKDIR /app
 
-# Copy the published output from the build stage to the runtime stage
-COPY --from=build /app/publish ./
+COPY --from=dotnet-builder /app/out .
 
-# Expose the port on which the application will run
 EXPOSE 8080
-
-# Define the entry point for the application
 ENTRYPOINT ["dotnet", "API.dll"]
